@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
+from statsmodels.tsa.stattools._stattools import breakvar_heteroskedasticity_test
 from statsmodels.tools.tools import pinv_extended, Bunch
 from statsmodels.tools.sm_exceptions import PrecisionWarning, ValueWarning
 from statsmodels.tools.numdiff import (_get_epsilon, approx_hess_cs,
@@ -3142,9 +3143,6 @@ class MLEResults(tsbase.TimeSeriesModelResults):
                              ' forecast errors have not been computed.')
 
         if method == 'breakvar':
-            from statsmodels.tsa.stattools import (
-                breakvar_heteroskedasticity_test
-                )
             # Store some values
             resid = self.filter_results.standardized_forecasts_error
             d = np.maximum(self.loglikelihood_burn, self.nobs_diffuse)
@@ -4826,9 +4824,10 @@ class MLEResults(tsbase.TimeSeriesModelResults):
                 jb = np.zeros((self.model.k_endog, 4)) * np.nan
 
             if self.model.k_endog <= display_max_endog:
-                format_str = lambda array: [  # noqa:E731
-                    ', '.join([f'{i:.2f}' for i in array])
-                ]
+
+                def format_str(array):
+                    return [', '.join([f'{i:.2f}' for i in array])]
+
                 diagn_left = [
                     ('Ljung-Box (L1) (Q):', format_str(lb[:, 0, -1])),
                     ('Prob(Q):', format_str(lb[:, 1, -1])),
